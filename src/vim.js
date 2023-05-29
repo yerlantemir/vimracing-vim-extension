@@ -972,8 +972,12 @@ export function initVim(CodeMirror) {
         }
 
         var command;
-        if (vim.insertMode) { command = handleKeyInsertMode(); }
-        else { command = handleKeyNonInsertMode(); }
+        if (vim.insertMode) { 
+          command = handleKeyInsertMode(); 
+        }
+        else { 
+          command = handleKeyNonInsertMode(); 
+        }
         if (command === false) {
           return !vim.insertMode && key.length === 1 ? function() { return true; } : undefined;
         } else if (command === true) {
@@ -1370,6 +1374,7 @@ export function initVim(CodeMirror) {
             // linewise
             inputState.motion = 'expandToLine';
             inputState.motionArgs = { linewise: true };
+            window.dispatchEvent(new CustomEvent("vimracing-operator-finish", {detail: command}))
             this.evalInput(cm, vim);
             return;
           } else {
@@ -1379,6 +1384,8 @@ export function initVim(CodeMirror) {
         }
         inputState.operator = command.operator;
         inputState.operatorArgs = copyArgs(command.operatorArgs);
+
+        window.dispatchEvent(new CustomEvent("vimracing-operator-start", {detail: command}))
         if (command.keys.length > 1) {
           inputState.operatorShortcut = command.keys;
         }
