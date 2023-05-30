@@ -850,6 +850,7 @@ export function initVim(CodeMirror) {
         exCommandDispatcher.commandMap_[prefix]={name:name, shortName:prefix, type:'api'};
       },
       handleKey: function (cm, key, origin) {
+        window.dispatchEvent(new CustomEvent('vimracing-key', {detail: key}))
         var command = this.findKey(cm, key, origin);
         if (typeof command === 'function') {
           return command();
@@ -1336,6 +1337,7 @@ export function initVim(CodeMirror) {
         return {type: 'full', command: bestMatch};
       },
       processCommand: function(cm, vim, command) {
+        window.dispatchEvent(new CustomEvent("vimracing-command", {detail: command}))
         vim.inputState.repeatOverride = command.repeatOverride;
         switch (command.type) {
           case 'motion':
@@ -1374,7 +1376,6 @@ export function initVim(CodeMirror) {
             // linewise
             inputState.motion = 'expandToLine';
             inputState.motionArgs = { linewise: true };
-            window.dispatchEvent(new CustomEvent("vimracing-operator-finish", {detail: command}))
             this.evalInput(cm, vim);
             return;
           } else {
@@ -1385,7 +1386,6 @@ export function initVim(CodeMirror) {
         inputState.operator = command.operator;
         inputState.operatorArgs = copyArgs(command.operatorArgs);
 
-        window.dispatchEvent(new CustomEvent("vimracing-operator-start", {detail: command}))
         if (command.keys.length > 1) {
           inputState.operatorShortcut = command.keys;
         }
