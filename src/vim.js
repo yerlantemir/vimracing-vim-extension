@@ -960,7 +960,13 @@ export function initVim(CodeMirror) {
             mainKey = vim.inputState.operatorShortcut;
           }
           var match = commandDispatcher.matchCommand(mainKey, defaultKeymap, vim.inputState, context);
-          if (match.type == 'none') { clearInputState(cm); return false; }
+
+            // reason - {partial, full, none}
+          window.dispatchEvent(new CustomEvent("vimracing-command-done", {detail: {
+            matchType: match.type,
+            command: match.command
+          }}))
+          if (match.type == 'none') { clearInputState(cm, match.type); return false; }
           else if (match.type == 'partial') { return true; }
           else if (match.type == 'clear') { clearInputState(cm); return true; }
 
@@ -1337,7 +1343,6 @@ export function initVim(CodeMirror) {
         return {type: 'full', command: bestMatch};
       },
       processCommand: function(cm, vim, command) {
-        window.dispatchEvent(new CustomEvent("vimracing-command", {detail: command}))
         vim.inputState.repeatOverride = command.repeatOverride;
         switch (command.type) {
           case 'motion':
@@ -1620,6 +1625,7 @@ export function initVim(CodeMirror) {
         }
       },
       evalInput: function(cm, vim) {
+        console.log('Eval');
         // If the motion command is set, execute both the operator and motion.
         // Otherwise return.
         var inputState = vim.inputState;
